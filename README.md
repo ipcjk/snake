@@ -1,7 +1,8 @@
 # snake
 snake in golang
 
-easiest way without any deps, using ansi controls and terminal foo only, several command line options 
+easiest way without any deps, using ansi controls and terminal foo only, several command line options,
+control with w-a-s-d , quit with q
 
 ```  
   -l int
