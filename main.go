@@ -25,7 +25,6 @@ var gameField = [25][80]int{}
 func main() {
 	const maxSnakeLength = 256
 	var score int
-	var snakeLength int
 	var lastAction rune
 
 	gameOver := false
@@ -33,13 +32,14 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	snakeElements := [maxSnakeLength + 1][1][2]int{}
 
-	snakeHeadPosX, snakeHeadPosY := 16, 16
+	snakeHeadPosX, snakeHeadPosY := 12, 40
 	snakeElements[0][0][0], snakeElements[0][0][1] = snakeHeadPosX, snakeHeadPosY
 
 	/* parse flags */
 	gameSpeed := flag.Duration("s", 30000000, "speed")
 	playerName := flag.String("p", "Nibbles", "name of the player")
 	randomElements := flag.Int("r", 0, "numbers of random elements to be placed on gamefield")
+	snakeLength := flag.Int("l", 0, "starting length of nibbles")
 	flag.Parse()
 
 	for i := 0; i < *randomElements; i++ {
@@ -110,11 +110,8 @@ func main() {
 		/* time to react*/
 		time.Sleep(*gameSpeed)
 
-		/* print score*/
-		printScore(snakeLength, score)
-
 		/* rotate old snake elements to the right side */
-		for i := maxSnakeLength - 1; i >= 0; i-- {
+		for i := *snakeLength + 1; i >= 0; i-- {
 			snakeElements[i+1][0][0] = snakeElements[i][0][0]
 			snakeElements[i+1][0][1] = snakeElements[i][0][1]
 		}
@@ -137,8 +134,8 @@ func main() {
 		/* now clear the "old" tail by moving the cursor inside multidimensional array + 1, if there has been
 		a snake on this gamefield coords, we need to clear it with an empty graphic element
 		*/
-		if lastAction != 'x' && gameField[snakeElements[snakeLength+1][0][0]][snakeElements[snakeLength+1][0][1]] == snake {
-			placeThing(snakeElements[snakeLength+1][0][0], snakeElements[snakeLength+1][0][1], empty)
+		if lastAction != 'x' && gameField[snakeElements[*snakeLength+1][0][0]][snakeElements[*snakeLength+1][0][1]] == snake {
+			placeThing(snakeElements[*snakeLength+1][0][0], snakeElements[*snakeLength+1][0][1], empty)
 		}
 
 		/* check input keys channel */
@@ -176,10 +173,11 @@ func main() {
 			gameOver = true
 			break
 		case food:
-			if snakeLength+1 < maxSnakeLength {
-				snakeLength++
+			if *snakeLength+1 < maxSnakeLength {
+				*snakeLength++
 			}
-			score++
+			score += 10
+			printScore(*snakeLength, score)
 			placeThing(randomXPos(), randomYPos(), food)
 		case snake:
 			if lastAction != 'x' {
@@ -204,12 +202,20 @@ func main() {
 	}
 }
 
-func randomXPos() int {
-	return rand.Intn(22) + 2
+func randomXPos() (randomX int) {
+	randomX = rand.Intn(24)
+	if randomX == 1 {
+		randomX++
+	}
+	return
 }
 
-func randomYPos() int {
-	return rand.Intn(78) + 1
+func randomYPos() (randomY int) {
+	randomY = rand.Intn(78)
+	if randomY == 0 {
+		randomY++
+	}
+	return
 }
 
 func placeThing(x, y, thing int) {
